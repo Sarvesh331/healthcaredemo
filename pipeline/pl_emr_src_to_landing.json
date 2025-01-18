@@ -361,7 +361,7 @@
 											"source": {
 												"type": "AzureDatabricksDeltaLakeSource",
 												"query": {
-													"value": "@concat('insert into audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loadate)\nvalues(''',item().datasource,''',item().tablename,''',activity('Lookup audit log for incremental load').output.rowscopied,''',item().watermark,''',utcNow(),''')\n\n)')",
+													"value": "@concat('insert into audit.load_logs(datasource,tablename,numberofrowscopied,watermarkcolumnname,loadate)\nvalues(''',item().datasource,''',item().tablename,''',activity('Lookup audit log for incremental load').output.rowscopied,''',item().watermark,''',utcNow(),''')\n\n)')",
 													"type": "Expression"
 												}
 											},
@@ -479,7 +479,7 @@
 											"source": {
 												"type": "AzureDatabricksDeltaLakeSource",
 												"query": {
-													"value": "@concat('insert into audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loadate)\nvalues(''',item().datasource,''',item().tablename,''',activity('full load').output.rowscopied,''',item().watermark,''',utcNow(),''')\n\n)')",
+													"value": "@concat('insert into audit.load_logs(datasource,tablename,numberofrowscopied,watermarkcolumnname,loadate)\nvalues(''',item().datasource,''',item().tablename,''',activity('full load').output.rowscopied,''',item().watermark,''',utcNow(),''')\n\n)')",
 													"type": "Expression"
 												}
 											},
