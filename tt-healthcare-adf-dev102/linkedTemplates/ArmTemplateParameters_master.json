@@ -1,0 +1,39 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "tt-healthcare-adf-dev102"
+		},
+		"ls_adb_deltalake_accessToken": {
+			"value": ""
+		},
+		"ls_azsql_password": {
+			"value": ""
+		},
+		"ls_blob_connectionString": {
+			"value": ""
+		},
+		"ls_storageaccnt_ttadls102_accountKey": {
+			"value": ""
+		},
+		"ls_azsql_properties_typeProperties_server": {
+			"value": "ttsqldev.database.windows.net"
+		},
+		"ls_azsql_properties_typeProperties_database": {
+			"value": "@{linkedService().db_name}"
+		},
+		"ls_azsql_properties_typeProperties_userName": {
+			"value": "mydev101"
+		},
+		"ls_storageaccnt_ttadls102_properties_typeProperties_url": {
+			"value": "https://ttadls102.dfs.core.windows.net/"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

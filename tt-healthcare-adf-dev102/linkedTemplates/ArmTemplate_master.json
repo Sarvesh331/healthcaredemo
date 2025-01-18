@@ -1,0 +1,98 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "tt-healthcare-adf-dev102"
+		},
+		"ls_adb_deltalake_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'ls_adb_deltalake'"
+		},
+		"ls_azsql_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_azsql'"
+		},
+		"ls_blob_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_blob'"
+		},
+		"ls_storageaccnt_ttadls102_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_storageaccnt_ttadls102'"
+		},
+		"ls_azsql_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "ttsqldev.database.windows.net"
+		},
+		"ls_azsql_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "@{linkedService().db_name}"
+		},
+		"ls_azsql_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "mydev101"
+		},
+		"ls_storageaccnt_ttadls102_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://ttadls102.dfs.core.windows.net/"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "tt-healthcare-adf-dev102_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"ls_adb_deltalake_accessToken": {
+						"value": "[parameters('ls_adb_deltalake_accessToken')]"
+					},
+					"ls_azsql_password": {
+						"value": "[parameters('ls_azsql_password')]"
+					},
+					"ls_blob_connectionString": {
+						"value": "[parameters('ls_blob_connectionString')]"
+					},
+					"ls_storageaccnt_ttadls102_accountKey": {
+						"value": "[parameters('ls_storageaccnt_ttadls102_accountKey')]"
+					},
+					"ls_azsql_properties_typeProperties_server": {
+						"value": "[parameters('ls_azsql_properties_typeProperties_server')]"
+					},
+					"ls_azsql_properties_typeProperties_database": {
+						"value": "[parameters('ls_azsql_properties_typeProperties_database')]"
+					},
+					"ls_azsql_properties_typeProperties_userName": {
+						"value": "[parameters('ls_azsql_properties_typeProperties_userName')]"
+					},
+					"ls_storageaccnt_ttadls102_properties_typeProperties_url": {
+						"value": "[parameters('ls_storageaccnt_ttadls102_properties_typeProperties_url')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
