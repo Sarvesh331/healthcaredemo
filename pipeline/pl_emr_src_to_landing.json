@@ -90,6 +90,7 @@
 								],
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
 									"enablePartitionDiscovery": false
 								},
 								"formatSettings": {
@@ -236,7 +237,17 @@
 											},
 											"dataset": {
 												"referenceName": "ls_adb_deltalake",
-												"type": "DatasetReference"
+												"type": "DatasetReference",
+												"parameters": {
+													"db_name": {
+														"value": "@item().source_data",
+														"type": "Expression"
+													},
+													"table_name": {
+														"value": "@item().tablename",
+														"type": "Expression"
+													}
+												}
 											},
 											"firstRowOnly": false
 										}
@@ -356,7 +367,11 @@
 											},
 											"dataset": {
 												"referenceName": "ls_adb_deltalake",
-												"type": "DatasetReference"
+												"type": "DatasetReference",
+												"parameters": {
+													"db_name": "a",
+													"table_name": "a"
+												}
 											}
 										}
 									}
@@ -470,7 +485,11 @@
 											},
 											"dataset": {
 												"referenceName": "ls_adb_deltalake",
-												"type": "DatasetReference"
+												"type": "DatasetReference",
+												"parameters": {
+													"db_name": "a",
+													"table_name": "a"
+												}
 											},
 											"firstRowOnly": false
 										}
