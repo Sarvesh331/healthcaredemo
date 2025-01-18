@@ -1,0 +1,30 @@
+{
+	"name": "ls_adb_deltalake",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adb_deltalake",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"db_name": {
+				"type": "string"
+			},
+			"table_name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureDatabricksDeltaLakeDataset",
+		"typeProperties": {
+			"database": {
+				"value": "@dataset().db_name",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().table_name",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	}
+}
