@@ -239,14 +239,8 @@
 												"referenceName": "ls_adb_deltalake",
 												"type": "DatasetReference",
 												"parameters": {
-													"db_name": {
-														"value": "@item().source_data",
-														"type": "Expression"
-													},
-													"table_name": {
-														"value": "@item().tablename",
-														"type": "Expression"
-													}
+													"db_name": "a",
+													"table_name": "a"
 												}
 											},
 											"firstRowOnly": false
@@ -361,7 +355,7 @@
 											"source": {
 												"type": "AzureDatabricksDeltaLakeSource",
 												"query": {
-													"value": "@concat('insert into audit.load_logs(datasource,tablename,numberofrowscopied,watermarkcolumnname,loadate)\nvalues(''',item().datasource,''',item().tablename,''',activity('Lookup audit log for incremental load').output.rowscopied,''',item().watermark,''',utcNow(),''')\n\n)')",
+													"value": "@concat('insert into audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loadate)\nvalues(''',item().datasource,''',item().tablename,''',activity('Lookup audit log for incremental load').output.rowscopied,''',item().watermark,''',utcNow(),''')\n\n)')",
 													"type": "Expression"
 												}
 											},
