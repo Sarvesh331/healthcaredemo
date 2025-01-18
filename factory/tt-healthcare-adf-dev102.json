@@ -1,0 +1,9 @@
+{
+	"name": "tt-healthcare-adf-dev102",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "95f18704-f137-489f-ac54-23eaaa509dcd",
+		"tenantId": "b8713e56-7030-4a7e-93d6-793a749a9797"
+	}
+}
