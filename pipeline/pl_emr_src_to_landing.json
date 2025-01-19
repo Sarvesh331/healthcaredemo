@@ -39,7 +39,7 @@
 				}
 			},
 			{
-				"name": "for each entry in lookup file",
+				"name": "ForEach entry in emr config file",
 				"type": "ForEach",
 				"dependsOn": [
 					{
@@ -58,7 +58,7 @@
 					"isSequential": true,
 					"activities": [
 						{
-							"name": "file_exists",
+							"name": "check if file already exists in bronze",
 							"type": "GetMetadata",
 							"dependsOn": [],
 							"policy": {
@@ -90,7 +90,6 @@
 								],
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
 									"enablePartitionDiscovery": false
 								},
 								"formatSettings": {
@@ -99,11 +98,11 @@
 							}
 						},
 						{
-							"name": "If file exists",
+							"name": "if file exists then archive",
 							"type": "IfCondition",
 							"dependsOn": [
 								{
-									"activity": "file_exists",
+									"activity": "check if file already exists in bronze",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -112,7 +111,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@equals(activity('file_exists').output,true)",
+									"value": "@activity('check if file already exists in bronze').output.exists",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
@@ -170,7 +169,7 @@
 														"type": "Expression"
 													},
 													"file_name": {
-														"value": "@split(item().tablename,'.')[1]",
+														"value": "@split(item().tablename, '.')[1]",
 														"type": "Expression"
 													}
 												}
@@ -183,7 +182,7 @@
 												"parameters": {
 													"container": "bronze",
 													"file_path": {
-														"value": "@concat(item().targetpath,'/archive/',formatDateTime(utcNow(),'yyyy'),'/',formatDateTime(utcNow(),'%M'),'/',formatDateTime(utcNow(),'%d'))",
+														"value": "@concat(item().targetpath,'/archive/',formatDateTime(utcNow(),'yyyy'),'/',formatDateTime(utcNow(),'MM'),'/',formatDateTime(utcNow(),'dd'),'/')",
 														"type": "Expression"
 													},
 													"file_name": {
@@ -198,11 +197,11 @@
 							}
 						},
 						{
-							"name": "If full load",
+							"name": "check if full load or incremental",
 							"type": "IfCondition",
 							"dependsOn": [
 								{
-									"activity": "If file exists",
+									"activity": "if file exists then archive",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -214,165 +213,9 @@
 									"value": "@equals(item().loadtype,'Full')",
 									"type": "Expression"
 								},
-								"ifFalseActivities": [
-									{
-										"name": "Lookup audit log for incremental load",
-										"type": "Lookup",
-										"dependsOn": [],
-										"policy": {
-											"timeout": "0.12:00:00",
-											"retry": 0,
-											"retryIntervalInSeconds": 30,
-											"secureOutput": false,
-											"secureInput": false
-										},
-										"userProperties": [],
-										"typeProperties": {
-											"source": {
-												"type": "AzureDatabricksDeltaLakeSource",
-												"query": {
-													"value": "@concat('select coalesce(cast(max(loaddate) as date),''','1900-01-01',''') as lastfetched_date from audit.load_logs where',' data_source=''',item().datasource,''' and tablename=''',item().tablename,'''')",
-													"type": "Expression"
-												}
-											},
-											"dataset": {
-												"referenceName": "ls_adb_deltalake",
-												"type": "DatasetReference",
-												"parameters": {
-													"db_name": "a",
-													"table_name": "a"
-												}
-											},
-											"firstRowOnly": false
-										}
-									},
-									{
-										"name": "Copy incremental data",
-										"type": "Copy",
-										"dependsOn": [
-											{
-												"activity": "Lookup audit log for incremental load",
-												"dependencyConditions": [
-													"Succeeded"
-												]
-											}
-										],
-										"policy": {
-											"timeout": "0.12:00:00",
-											"retry": 0,
-											"retryIntervalInSeconds": 30,
-											"secureOutput": false,
-											"secureInput": false
-										},
-										"userProperties": [],
-										"typeProperties": {
-											"source": {
-												"type": "AzureSqlSource",
-												"sqlReaderQuery": {
-													"value": "@concat('select *,''',item().datasource,''' as datasource from',item().tablename,'where', item().watermark,'>=''',activity('Lookup audit log for incremental load').output.firstRow.lastfetched_date,'''')",
-													"type": "Expression"
-												},
-												"queryTimeout": "02:00:00",
-												"partitionOption": "None"
-											},
-											"sink": {
-												"type": "ParquetSink",
-												"storeSettings": {
-													"type": "AzureBlobFSWriteSettings"
-												},
-												"formatSettings": {
-													"type": "ParquetWriteSettings"
-												}
-											},
-											"enableStaging": false,
-											"translator": {
-												"type": "TabularTranslator",
-												"typeConversion": true,
-												"typeConversionSettings": {
-													"allowDataTruncation": true,
-													"treatBooleanAsNumber": false
-												}
-											}
-										},
-										"inputs": [
-											{
-												"referenceName": "ds_azsql",
-												"type": "DatasetReference",
-												"parameters": {
-													"db_name": {
-														"value": "@item().database",
-														"type": "Expression"
-													},
-													"schema_name": {
-														"value": "@item().schema_name",
-														"type": "Expression"
-													},
-													"table_name": {
-														"value": "@item().tablename",
-														"type": "Expression"
-													}
-												}
-											}
-										],
-										"outputs": [
-											{
-												"referenceName": "ds_storageaccnt_parquetfile",
-												"type": "DatasetReference",
-												"parameters": {
-													"container": "bronze",
-													"file_path": {
-														"value": "@item().targetpath",
-														"type": "Expression"
-													},
-													"file_name": {
-														"value": "@split(item().tablename, '.')[1]",
-														"type": "Expression"
-													}
-												}
-											}
-										]
-									},
-									{
-										"name": "update delta audit table",
-										"type": "Lookup",
-										"dependsOn": [
-											{
-												"activity": "Copy incremental data",
-												"dependencyConditions": [
-													"Succeeded"
-												]
-											}
-										],
-										"policy": {
-											"timeout": "0.12:00:00",
-											"retry": 0,
-											"retryIntervalInSeconds": 30,
-											"secureOutput": false,
-											"secureInput": false
-										},
-										"userProperties": [],
-										"typeProperties": {
-											"source": {
-												"type": "AzureDatabricksDeltaLakeSource",
-												"query": {
-													"value": "@concat('insert into audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loadate)\nvalues(''',item().datasource,''',item().tablename,''',activity('Lookup audit log for incremental load').output.rowscopied,''',item().watermark,''',utcNow(),''')\n\n)')",
-													"type": "Expression"
-												}
-											},
-											"dataset": {
-												"referenceName": "ls_adb_deltalake",
-												"type": "DatasetReference",
-												"parameters": {
-													"db_name": "a",
-													"table_name": "a"
-												}
-											}
-										}
-									}
-								],
 								"ifTrueActivities": [
 									{
-										"name": "full load",
+										"name": "Copy data from azsql to bronze",
 										"type": "Copy",
 										"dependsOn": [],
 										"policy": {
@@ -387,7 +230,7 @@
 											"source": {
 												"type": "AzureSqlSource",
 												"sqlReaderQuery": {
-													"value": "@concat('select *,''',item().datasource,''' as datasource from',\nitem().tablename)",
+													"value": "@concat('select *,''',item().datasource,''' as datasource from',''',item().tablename,''')",
 													"type": "Expression"
 												},
 												"queryTimeout": "02:00:00",
@@ -449,44 +292,6 @@
 												}
 											}
 										]
-									},
-									{
-										"name": "update audit table",
-										"type": "Lookup",
-										"dependsOn": [
-											{
-												"activity": "full load",
-												"dependencyConditions": [
-													"Succeeded"
-												]
-											}
-										],
-										"policy": {
-											"timeout": "0.12:00:00",
-											"retry": 0,
-											"retryIntervalInSeconds": 30,
-											"secureOutput": false,
-											"secureInput": false
-										},
-										"userProperties": [],
-										"typeProperties": {
-											"source": {
-												"type": "AzureDatabricksDeltaLakeSource",
-												"query": {
-													"value": "@concat('insert into audit.load_logs(datasource,tablename,numberofrowscopied,watermarkcolumnname,loadate)\nvalues(''',item().datasource,''',item().tablename,''',activity('full load').output.rowscopied,''',item().watermark,''',utcNow(),''')\n\n)')",
-													"type": "Expression"
-												}
-											},
-											"dataset": {
-												"referenceName": "ls_adb_deltalake",
-												"type": "DatasetReference",
-												"parameters": {
-													"db_name": "a",
-													"table_name": "a"
-												}
-											},
-											"firstRowOnly": false
-										}
 									}
 								]
 							}
