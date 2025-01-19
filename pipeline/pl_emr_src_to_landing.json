@@ -508,7 +508,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@equals(item().is_active,1 )",
+									"value": "@equals(item().is_active,'1' )",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
@@ -525,7 +525,7 @@
 												"referenceName": "pl_copy_data",
 												"type": "PipelineReference"
 											},
-											"waitOnCompletion": true,
+											"waitOnCompletion": false,
 											"parameters": {
 												"load_type": {
 													"value": "@item().loadtype",
