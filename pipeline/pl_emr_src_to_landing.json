@@ -550,6 +550,10 @@
 												"watermark": {
 													"value": "@item().watermark",
 													"type": "Expression"
+												},
+												"target_path": {
+													"value": "@item().targetpath",
+													"type": "Expression"
 												}
 											}
 										}
