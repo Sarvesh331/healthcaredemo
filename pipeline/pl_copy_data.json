@@ -3,18 +3,18 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "check if full load or incremental",
+				"name": "check if full load or incremental_copy1",
 				"type": "IfCondition",
 				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@equals(item().loadtype,'Full')",
+						"value": "@equals(pipeline().parameters.load_type,'Full' )",
 						"type": "Expression"
 					},
 					"ifFalseActivities": [
 						{
-							"name": "Lookup delta log table",
+							"name": "Lookup delta log table_copy1",
 							"type": "Lookup",
 							"dependsOn": [],
 							"policy": {
@@ -29,7 +29,7 @@
 								"source": {
 									"type": "AzureDatabricksDeltaLakeSource",
 									"query": {
-										"value": "@concat('select coalesce(cast(max(loaddate) as date),''','1900-01-01',''') as last_loadedtime from audit.load_logs where tablename=''',item().tablename,''' and data_source=''',item().datasource,'''')",
+										"value": "@concat('select coalesce(cast(max(loaddate) as date),''','1900-01-01',''') as last_loadedtime from staging.audit.load_logs where tablename=''',pipeline().parameters.table_name,''' and data_source=''',pipeline().parameters.data_source,'''')",
 										"type": "Expression"
 									}
 								},
@@ -37,7 +37,7 @@
 									"referenceName": "ls_adb_deltalake",
 									"type": "DatasetReference",
 									"parameters": {
-										"db_name": "audit",
+										"db_name": "staging.audit",
 										"table_name": "load_logs"
 									}
 								},
@@ -45,11 +45,11 @@
 							}
 						},
 						{
-							"name": "Copy incremental data",
+							"name": "Copy incremental data_copy1",
 							"type": "Copy",
 							"dependsOn": [
 								{
-									"activity": "Lookup delta log table",
+									"activity": "Lookup delta log table_copy1",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -67,7 +67,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@concat('select *,''',item().datasource,''' as datasource from ',item().tablename,' where ''',item().watermark,''' >= ''',activity('Lookup delta log table').output.value[0].last_loadedtime,'''')",
+										"value": "@concat('select *,''',pipeline().parameters.data_source,''' as datasource from ',pipeline().parameters.table_name,' where ''',pipeline().parameters.watermark,''' >= ''','will see later','''')",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
@@ -98,15 +98,15 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"db_name": {
-											"value": "@item().database",
+											"value": "@pipeline().parameters.db_name",
 											"type": "Expression"
 										},
 										"schema_name": {
-											"value": "@split(item().tablename,'.' )[0]",
+											"value": "@pipeline().parameters.schema_name",
 											"type": "Expression"
 										},
 										"table_name": {
-											"value": "@split(item().tablename,'.' )[1]",
+											"value": "@pipeline().parameters.table_name",
 											"type": "Expression"
 										}
 									}
@@ -131,11 +131,11 @@
 							]
 						},
 						{
-							"name": "update delta log table",
+							"name": "update delta log table_copy1",
 							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "Copy incremental data",
+									"activity": "Copy incremental data_copy1",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -153,7 +153,7 @@
 								"source": {
 									"type": "AzureDatabricksDeltaLakeSource",
 									"query": {
-										"value": "@concat('insert into audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values(''',item().datasource,''',''',item().tablename,''',''',activity('Copy incremental data').output.rowscopied,''', ''',item().watermark,''',''',utcNow(),''')')",
+										"value": "@concat('insert into staging.audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values(''',pipeline().parameters.data_source,''',''',pipeline().parameters.table_name,''',''','will implement later',''', ''',pipeline().parameters.watermark,''',''',utcNow(),''')')",
 										"type": "Expression"
 									}
 								},
@@ -161,7 +161,7 @@
 									"referenceName": "ls_adb_deltalake",
 									"type": "DatasetReference",
 									"parameters": {
-										"db_name": "audit",
+										"db_name": "staging.audit",
 										"table_name": "load_logs"
 									}
 								},
@@ -171,7 +171,7 @@
 					],
 					"ifTrueActivities": [
 						{
-							"name": "Copy data from azsql to bronze",
+							"name": "Copy data from azsql to bronze_copy1",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -186,7 +186,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@concat('select *,''',item().datasource,''' as datasource from',' ',item().tablename)",
+										"value": "@concat('select *,''',pipeline().parameters.data_source,''' as datasource from',' ',pipeline().parameters.table_name)",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
@@ -217,15 +217,15 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"db_name": {
-											"value": "@item().database",
+											"value": "@pipeline().parameters.db_name",
 											"type": "Expression"
 										},
 										"schema_name": {
-											"value": "@split(item().tablename,'.')[0]",
+											"value": "@pipeline().parameters.schema_name",
 											"type": "Expression"
 										},
 										"table_name": {
-											"value": "@split(item().tablename,'.')[1]",
+											"value": "@pipeline().parameters.table_name",
 											"type": "Expression"
 										}
 									}
@@ -250,11 +250,11 @@
 							]
 						},
 						{
-							"name": "update log table",
+							"name": "update log table_copy1",
 							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "Copy data from azsql to bronze",
+									"activity": "Copy data from azsql to bronze_copy1",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -272,7 +272,7 @@
 								"source": {
 									"type": "AzureDatabricksDeltaLakeSource",
 									"query": {
-										"value": "@concat('insert into audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values(''',item().datasource,''',''',item().tablename,''',''',activity('Copy data from azsql to bronze').output.rowscopied,''', ''',item().watermark,''',''',utcNow(),''')')",
+										"value": "@concat('insert into staging.audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values(''',pipeline().parameters.data_source,''',''',pipeline().parameters.table_name,''',''','will update later',''', ''',pipeline().parameters.watermark,''',''',utcNow(),''')')",
 										"type": "Expression"
 									}
 								},
@@ -280,7 +280,7 @@
 									"referenceName": "ls_adb_deltalake",
 									"type": "DatasetReference",
 									"parameters": {
-										"db_name": "audit",
+										"db_name": "staging.audit",
 										"table_name": "load_logs"
 									}
 								},
@@ -291,6 +291,31 @@
 				}
 			}
 		],
+		"parameters": {
+			"load_type": {
+				"type": "string"
+			},
+			"db_name": {
+				"type": "string"
+			},
+			"schema_name": {
+				"type": "string"
+			},
+			"table_name": {
+				"type": "string"
+			},
+			"data_source": {
+				"type": "string"
+			},
+			"watermark": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"x": {
+				"type": "String"
+			}
+		},
 		"annotations": []
 	}
 }
