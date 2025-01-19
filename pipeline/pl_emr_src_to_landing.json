@@ -539,7 +539,7 @@
 														"source": {
 															"type": "AzureDatabricksDeltaLakeSource",
 															"query": {
-																"value": "@concat('select coalesce(cast(max(loaddate) as date),''','1900-01-01',''') as last_loadedtime from audit.load_logs where tablename=''',item().tablename,''' and data_source=''',item().datasource,'''')",
+																"value": "@concat('select coalesce(cast(max(loaddate) as date),''','1900-01-01',''') as last_loadedtime from staging.audit.load_logs where tablename=''',item().tablename,''' and data_source=''',item().datasource,'''')",
 																"type": "Expression"
 															}
 														},
@@ -547,7 +547,7 @@
 															"referenceName": "ls_adb_deltalake",
 															"type": "DatasetReference",
 															"parameters": {
-																"db_name": "audit",
+																"db_name": "staging.audit",
 																"table_name": "load_logs"
 															}
 														},
@@ -663,7 +663,7 @@
 														"source": {
 															"type": "AzureDatabricksDeltaLakeSource",
 															"query": {
-																"value": "@concat('insert into audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values(''',item().datasource,''',''',item().tablename,''',''',activity('Copy incremental data').output.rowscopied,''', ''',item().watermark,''',''',utcNow(),''')')",
+																"value": "@concat('insert into staging.audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values(''',item().datasource,''',''',item().tablename,''',''',activity('Copy incremental data').output.rowscopied,''', ''',item().watermark,''',''',utcNow(),''')')",
 																"type": "Expression"
 															}
 														},
@@ -671,7 +671,7 @@
 															"referenceName": "ls_adb_deltalake",
 															"type": "DatasetReference",
 															"parameters": {
-																"db_name": "audit",
+																"db_name": "staging.audit",
 																"table_name": "load_logs"
 															}
 														},
@@ -782,7 +782,7 @@
 														"source": {
 															"type": "AzureDatabricksDeltaLakeSource",
 															"query": {
-																"value": "@concat('insert into audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values(''',item().datasource,''',''',item().tablename,''',''',activity('Copy data from azsql to bronze').output.rowscopied,''', ''',item().watermark,''',''',utcNow(),''')')",
+																"value": "@concat('insert into staging.audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values(''',item().datasource,''',''',item().tablename,''',''',activity('Copy data from azsql to bronze').output.rowscopied,''', ''',item().watermark,''',''',utcNow(),''')')",
 																"type": "Expression"
 															}
 														},
@@ -790,7 +790,7 @@
 															"referenceName": "ls_adb_deltalake",
 															"type": "DatasetReference",
 															"parameters": {
-																"db_name": "audit",
+																"db_name": "staging.audit",
 																"table_name": "load_logs"
 															}
 														},
