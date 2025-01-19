@@ -67,7 +67,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@concat('select *,''',pipeline().parameters.data_source,''' as datasource from ',pipeline().parameters.table_name,' where ''',pipeline().parameters.watermark,''' >= ''','will see later','''')",
+										"value": "@concat('select *,''',pipeline().parameters.data_source,''' as datasource from ',pipeline().parameters.table_name,' where ''',pipeline().parameters.watermark,''' >= ''',activity('Lookup delta log table_copy1').output.value[0].last_loadedtime,'''')",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
@@ -153,7 +153,7 @@
 								"source": {
 									"type": "AzureDatabricksDeltaLakeSource",
 									"query": {
-										"value": "@concat('insert into staging.audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values(''',pipeline().parameters.data_source,''',''',pipeline().parameters.table_name,''',''','will implement later',''', ''',pipeline().parameters.watermark,''',''',utcNow(),''')')",
+										"value": "@concat('insert into staging.audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values(''',pipeline().parameters.data_source,''',''',pipeline().parameters.table_name,''',''',activity('Copy incremental data_copy1').output.rowscopied,''', ''',pipeline().parameters.watermark,''',''',utcNow(),''')')",
 										"type": "Expression"
 									}
 								},
@@ -272,7 +272,7 @@
 								"source": {
 									"type": "AzureDatabricksDeltaLakeSource",
 									"query": {
-										"value": "@concat('insert into staging.audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values(''',pipeline().parameters.data_source,''',''',pipeline().parameters.table_name,''',''','will update later',''', ''',pipeline().parameters.watermark,''',''',utcNow(),''')')",
+										"value": "@concat('insert into staging.audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values(''',pipeline().parameters.data_source,''',''',pipeline().parameters.table_name,''',''',activity('Copy data from azsql to bronze_copy1').output.rowscopied,''', ''',pipeline().parameters.watermark,''',''',utcNow(),''')')",
 										"type": "Expression"
 									}
 								},
