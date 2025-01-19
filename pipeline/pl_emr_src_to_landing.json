@@ -230,7 +230,7 @@
 											"source": {
 												"type": "AzureSqlSource",
 												"sqlReaderQuery": {
-													"value": "@concat('select *,''',item().datasource,''' as datasource from',''',item().tablename,''')",
+													"value": "@concat('select *,''',item().datasource,''' as datasource from',' ',item().tablename)",
 													"type": "Expression"
 												},
 												"queryTimeout": "02:00:00",
@@ -292,6 +292,44 @@
 												}
 											}
 										]
+									},
+									{
+										"name": "update log table",
+										"type": "Lookup",
+										"dependsOn": [
+											{
+												"activity": "Copy data from azsql to bronze",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "AzureDatabricksDeltaLakeSource",
+												"query": {
+													"value": "@concat('insert into audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate)',' ','values(',item().datasource,',',item().tablename,',',activity('Copy data from azsql to bronze').output.rowscopied,',',item().watermark,',',utcNow(),')')",
+													"type": "Expression"
+												}
+											},
+											"dataset": {
+												"referenceName": "ls_adb_deltalake",
+												"type": "DatasetReference",
+												"parameters": {
+													"db_name": "audit",
+													"table_name": "load_logs"
+												}
+											},
+											"firstRowOnly": false
+										}
 									}
 								]
 							}
